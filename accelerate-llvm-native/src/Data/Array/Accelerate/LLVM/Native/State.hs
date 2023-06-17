@@ -26,16 +26,14 @@ import Data.Array.Accelerate.LLVM.Native.Execute.Scheduler
 import qualified Data.Array.Accelerate.LLVM.Native.Link.Cache       as LC
 import qualified Data.Array.Accelerate.LLVM.Native.Debug            as Debug
 
-import Data.Char
 import Data.Maybe
+import Foreign.C.String (newCString)
 import Formatting
-import Language.Haskell.TH
 import System.Environment
 import System.IO.Unsafe
 import Text.Read
 
 import GHC.Conc
-import GHC.Ptr
 
 
 -- | Execute a computation in the Native backend
@@ -48,7 +46,7 @@ evalNative :: Native -> LLVM Native a -> IO a
 -- empty "frame" with no (execution) trace
 --
 evalNative target acc = do
-  let label = Ptr $(litE (stringPrimL (map (fromIntegral . ord) "Native.run\0")))
+  label <- newCString "Native.run\0"
   init_thread
   emit_frame_mark_start label
   !result <- evalLLVM target acc
